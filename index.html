@@ -1,219 +1,84 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>DarkGPT — Spyboy</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 <style>
   :root{
-    --bg: #000000;
-    --surface: #0b0b0b;
-    --muted: #9aa0a6;
-    --text: #e6eef3;
-    --accent: #00ff99; /* neon green for user messages */
-    --btn: #111213;
-    --danger: #ff4d4d;
+    --bg:#000000;
+    --surface:#070707;
+    --muted:#8b8f95;
+    --text:#e6eef3;
+    --accent:#00ff99;
+    --danger:#ff4d4d;
+    --card: rgba(255,255,255,0.02);
   }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial}
+  body{background:var(--bg);color:var(--text);display:flex;align-items:center;justify-content:center;padding:18px}
 
-  html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;}
-  body{
-    background:var(--bg);
-    color:var(--text);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding:20px;
-    box-sizing:border-box;
-  }
-
-  /* App frame */
-  .app {
-    width:100%;
-    max-width:980px;
-    height:90vh;
-    background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.01));
-    border:1px solid rgba(255,255,255,0.03);
-    box-shadow: 0 12px 40px rgba(0,0,0,0.8);
-    border-radius:12px;
-    display:flex;
-    flex-direction:column;
-    overflow:hidden;
-  }
-
-  /* header */
-  .header{
-    display:flex;
-    align-items:center;
-    gap:12px;
-    padding:14px 18px;
-    background:var(--surface);
-    border-bottom:1px solid rgba(255,255,255,0.03);
-  }
-  .logo{
-    width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,#021, #032);
-    display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--accent);
-    box-shadow: 0 4px 12px rgba(0,255,153,0.03);
-    font-family:monospace;
-  }
-  .title{
-    font-size:1.05rem;font-weight:600;color:var(--text);
-  }
+  .app{width:100%;max-width:1100px;height:92vh;border-radius:14px;display:flex;flex-direction:column;overflow:hidden;border:1px solid rgba(255,255,255,0.03);background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.01));box-shadow:0 20px 60px rgba(0,0,0,0.8)}
+  .header{display:flex;align-items:center;gap:12px;padding:14px 18px;background:var(--surface);border-bottom:1px solid rgba(255,255,255,0.03)}
+  .logo{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#021,#032);display:flex;align-items:center;justify-content:center;color:var(--accent);font-weight:700;font-family:monospace}
+  .title{font-size:1.05rem;font-weight:700;color:var(--text)}
   .spacer{flex:1}
-  .brand{
-    font-size:0.92rem;color:var(--muted);text-decoration:none;margin-left:8px;
-  }
+  .brand{color:var(--muted);text-decoration:none}
 
-  /* main chat area */
-  .main{
-    flex:1;
-    display:flex;
-    gap:12px;
-    padding:18px;
-    overflow:hidden;
-  }
+  .body{flex:1;display:grid;grid-template-columns: 1fr 360px;gap:14px;padding:16px;min-height:0}
+  /* left column (chat) */
+  .panel{background:transparent;border-radius:12px;display:flex;flex-direction:column;gap:12px;min-height:0}
+  .chat{flex:1;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:12px}
+  .msg{max-width:78%;padding:12px 14px;border-radius:10px;line-height:1.4;font-size:0.95rem}
+  .msg.user{margin-left:auto;background:linear-gradient(180deg, rgba(0,255,153,0.06), rgba(0,255,153,0.03));border:1px solid rgba(0,255,153,0.12);color:var(--text)}
+  .msg.assistant{margin-right:auto;background:var(--card);border:1px solid rgba(255,255,255,0.03);color:var(--text)}
 
-  .left {
-    width:100%;
-    display:flex;
-    flex-direction:column;
-    gap:12px;
-    height:100%;
-    background:transparent;
-  }
+  .meta{font-size:0.78rem;color:var(--muted);margin-top:6px;display:flex;gap:10px;align-items:center}
+  .controls{display:flex;gap:10px;padding:10px;border-top:1px solid rgba(255,255,255,0.02);background:var(--surface)}
+  .input{flex:1;display:flex;gap:8px;align-items:center}
+  input[type="text"], textarea{background:#050505;border:1px solid rgba(255,255,255,0.03);color:var(--text);padding:10px 12px;border-radius:10px;width:100%;font-size:0.96rem}
+  textarea{min-height:90px;resize:vertical}
 
-  .chat {
-    flex:1;
-    overflow-y:auto;
-    padding-right:6px;
-    display:flex;
-    flex-direction:column;
-    gap:12px;
-  }
-
-  .msg {
-    max-width:78%;
-    padding:12px 14px;
-    border-radius:10px;
-    line-height:1.4;
-    font-size:0.96rem;
-    word-break:break-word;
-  }
-
-  .msg.user {
-    margin-left:auto;
-    background: linear-gradient(180deg, rgba(0,255,153,0.06), rgba(0,255,153,0.03));
-    border:1px solid rgba(0,255,153,0.12);
-    color:var(--text);
-    box-shadow: 0 6px 18px rgba(0,255,153,0.02);
-  }
-
-  .msg.assistant {
-    margin-right:auto;
-    background: rgba(255,255,255,0.02);
-    border:1px solid rgba(255,255,255,0.03);
-    color:var(--text);
-  }
-
-  .meta {
-    font-size:0.76rem;color:var(--muted);margin-top:6px;
-    display:flex;gap:8px;align-items:center;
-  }
-
-  /* footer input area */
-  .footer {
-    padding:14px;
-    border-top:1px solid rgba(255,255,255,0.02);
-    background:var(--surface);
-    display:flex;
-    gap:10px;
-    align-items:center;
-  }
-
-  .input {
-    flex:1;
-    display:flex;
-    gap:8px;
-    align-items:center;
-  }
-
-  input[type="text"]{
-    width:100%;
-    background: #060606;
-    border:1px solid rgba(255,255,255,0.03);
-    color:var(--text);
-    padding:12px 14px;
-    border-radius:10px;
-    font-size:0.95rem;
-  }
-  input[type="text"]:focus{outline:none;box-shadow:0 0 0 3px rgba(0,255,153,0.06);border-color:rgba(0,255,153,0.12)}
-
-  .btn {
-    background:var(--btn);
-    border:1px solid rgba(255,255,255,0.03);
-    color:var(--text);
-    padding:10px 14px;
-    border-radius:10px;
-    cursor:pointer;
-    font-weight:600;
-    font-size:0.95rem;
-  }
+  .btn{background:#0b0b0b;border:1px solid rgba(255,255,255,0.03);color:var(--text);padding:10px 12px;border-radius:10px;cursor:pointer;font-weight:600}
+  .btn.primary{background:linear-gradient(180deg,#022,#013);border:1px solid rgba(0,255,153,0.12);box-shadow:0 6px 18px rgba(0,255,153,0.03)}
+  .btn.danger{background:var(--danger);border-color:rgba(255,77,77,0.9);color:white}
   .btn:active{transform:translateY(1px)}
-  .btn.primary {
-    background:linear-gradient(180deg,#052,#023);
-    border:1px solid rgba(0,255,153,0.14);
-    color:var(--text);
-    box-shadow:0 6px 16px rgba(0,255,153,0.03);
-  }
 
-  .btn.img {
-    background:var(--danger);
-    border-color:rgba(255,77,77,0.9);
-    color:white;
-  }
+  /* right column: settings + gallery */
+  .side{background:var(--surface);padding:12px;border-radius:12px;display:flex;flex-direction:column;gap:12px;min-height:0}
+  .section{background:transparent;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.02)}
+  .section h4{margin:0 0 6px 0;font-size:0.95rem}
+  .row{display:flex;gap:8px;align-items:center}
 
-  /* typing indicator */
-  .typing {
-    display:inline-block;
-    font-size:0.9rem;
-    color:var(--muted);
-    padding:6px 10px;
-    border-radius:8px;
-    background:rgba(255,255,255,0.01);
-    border:1px solid rgba(255,255,255,0.02);
-    width:fit-content;
-  }
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+  .chip{background:rgba(255,255,255,0.02);padding:8px 10px;border-radius:999px;border:1px solid rgba(255,255,255,0.02);cursor:pointer;color:var(--text);font-weight:600;font-size:0.92rem}
+  .chip .icon{margin-right:8px;color:var(--muted)}
 
-  /* modal for image generator */
-  .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:none;align-items:center;justify-content:center;z-index:60}
-  .modal {
-    width:min(720px,96%);
-    background:#060606;
-    border:1px solid rgba(255,255,255,0.04);
-    padding:18px;border-radius:12px;
-    box-shadow:0 20px 60px rgba(0,0,0,0.7);
-    color:var(--text);
-  }
-  .modal h3{margin:0 0 8px 0;color:var(--text)}
-  .modal label{font-size:0.86rem;color:var(--muted)}
-  .modal textarea{
-    width:100%;min-height:120px;padding:12px;border-radius:8px;background:#050505;border:1px solid rgba(255,255,255,0.03);color:var(--text);
-    margin-top:8px;font-size:0.95rem;
-  }
+  /* gallery */
+  .gallery{display:grid;grid-template-columns:repeat(1,1fr);gap:8px;max-height:46vh;overflow:auto;padding-right:6px}
+  .thumb{display:flex;gap:8px;align-items:center;padding:8px;border-radius:8px;background:rgba(255,255,255,0.01);border:1px solid rgba(255,255,255,0.02)}
+  .thumb img{width:84px;height:64px;object-fit:cover;border-radius:6px}
+  .thumb .meta{display:flex;flex-direction:column;gap:6px}
+  .small{font-size:0.84rem;color:var(--muted)}
+  .muted{color:var(--muted)}
 
-  .modal .row{display:flex;gap:8px;margin-top:12px;align-items:center}
-  .modal .small{font-size:0.82rem;color:var(--muted)}
+  /* modal */
+  .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.7);display:none;align-items:center;justify-content:center;z-index:200}
+  .modal{width:min(900px,96%);background:#060606;border-radius:12px;padding:16px;border:1px solid rgba(255,255,255,0.04);box-shadow:0 24px 80px rgba(0,0,0,0.8)}
+  .modal .row{align-items:center}
+  .img-preview{max-width:100%;border-radius:10px;border:1px solid rgba(255,255,255,0.03)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px}
 
-  /* image preview bubble */
-  .img-preview{max-width:320px;border-radius:8px;display:block;margin-top:8px;border:1px solid rgba(255,255,255,0.04)}
   /* responsive */
-  @media (max-width:640px){
-    .msg{max-width:92%}
-    .modal{padding:12px}
+  @media (max-width:980px){
+    .body{grid-template-columns:1fr; padding:12px}
+    .side{order:2}
   }
 </style>
 </head>
 <body>
-  <div class="app" role="application" aria-label="DarkGPT chat">
+  <div class="app" role="application" aria-label="DarkGPT">
     <div class="header">
       <div class="logo">DG</div>
       <div class="title">DarkGPT</div>
@@ -221,261 +86,401 @@
       <a class="brand" href="https://spyboy.bio" target="_blank" rel="noopener">Made by Spyboy</a>
     </div>
 
-    <div class="main">
-      <div class="left">
-        <div id="chat" class="chat" aria-live="polite" aria-atomic="false">
-          <!-- messages get injected here -->
-          <div id="welcome" class="msg assistant">
-            <div><strong>DarkGPT</strong> — Hi. Ask me anything. Use the Image Generator to create images.</div>
-            <div class="meta">Powered by Spyboy • <span class="small">Offline demo / connect your API below</span></div>
+    <div class="body">
+      <div class="panel">
+        <div class="chat" id="chat" role="log" aria-live="polite">
+          <div class="msg assistant" id="welcome">
+            <div><strong>DarkGPT</strong> — Hi. Ask me anything. Use the Image Generator in the sidebar.</div>
+            <div class="meta"><span class="muted">Offline demo — connect your API in settings</span></div>
           </div>
         </div>
-      </div>
-    </div>
 
-    <div class="footer" role="region" aria-label="Message composer">
-      <div class="input">
-        <input id="inputText" type="text" placeholder="Type your message and press Enter or Send..." aria-label="Message input">
+        <div class="controls" role="region" aria-label="Composer">
+          <div class="input" style="flex:1">
+            <input id="inputText" type="text" placeholder="Type your message..." aria-label="Message input">
+          </div>
+          <button id="sendBtn" class="btn primary" title="Send message"><i class="fa-solid fa-paper-plane"></i>&nbsp;Send</button>
+          <button id="openImage" class="btn" title="Open image generator"><i class="fa-solid fa-image"></i></button>
+        </div>
       </div>
 
-      <button id="imageBtn" class="btn img" title="Open Image Generator">🖼 Image Generator</button>
-      <button id="sendBtn" class="btn primary" title="Send message">Send</button>
+      <aside class="side" aria-label="Settings and Gallery">
+        <div class="section">
+          <h4>System prompt</h4>
+          <label class="small muted">Set behavior/personality (applied to all requests)</label>
+          <textarea id="systemPrompt" placeholder="e.g. You are a concise assistant that speaks like a hacker." ></textarea>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button id="saveSystem" class="btn">Save</button>
+            <button id="clearSystem" class="btn">Clear</button>
+            <div style="flex:1"></div>
+            <button id="testSystem" class="btn primary">Test</button>
+          </div>
+        </div>
+
+        <div class="section" aria-live="polite">
+          <h4>Prompt refinements</h4>
+          <div class="chips" id="refineChips">
+            <div class="chip" data-text=", cinematic, ultra-detailed">🎬 cinematic</div>
+            <div class="chip" data-text=", photorealistic, 8k">📷 photorealistic</div>
+            <div class="chip" data-text=", vibrant colors, high contrast">✨ vivid</div>
+            <div class="chip" data-text=", minimal, flat colors">♢ minimal</div>
+            <div class="chip" data-text=", studio lighting">💡 studio</div>
+          </div>
+        </div>
+
+        <div class="section">
+          <h4>Image Generator</h4>
+          <label class="small muted">Prompt</label>
+          <input id="imagePrompt" type="text" placeholder="e.g. cyberpunk city at night, neon, skyline">
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <input id="count" type="number" value="1" min="1" max="6" style="width:84px;padding:8px;border-radius:8px;background:#050505;border:1px solid rgba(255,255,255,0.03);color:var(--text)">
+            <select id="size" style="padding:8px;border-radius:8px;background:#050505;border:1px solid rgba(255,255,255,0.03);color:var(--text)">
+              <option value="1024x1024">1024x1024</option>
+              <option value="768x768">768x768</option>
+              <option value="512x512">512x512</option>
+            </select>
+            <button id="generateBtn" class="btn primary">Generate</button>
+          </div>
+          <div class="small muted" style="margin-top:8px">Batch generation supported (max 6). Generated images are stored locally in your browser.</div>
+        </div>
+
+        <div class="section">
+          <h4>History & Gallery</h4>
+          <div id="gallery" class="gallery" aria-live="polite"></div>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button id="clearGallery" class="btn">Clear</button>
+            <button id="exportGallery" class="btn">Export JSON</button>
+            <div style="flex:1"></div>
+            <button id="downloadAll" class="btn">Download All</button>
+          </div>
+        </div>
+      </aside>
     </div>
   </div>
 
-  <!-- Image modal -->
-  <div id="modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-hidden="true">
+  <!-- modal preview -->
+  <div id="modalBackdrop" class="modal-backdrop" role="dialog" aria-modal="true" aria-hidden="true">
     <div class="modal" role="document">
-      <h3>Image Generator</h3>
-      <label for="imgPrompt">Describe the image you want:</label>
-      <textarea id="imgPrompt" placeholder="e.g. Cyberpunk city at night, neon lights, cinematic, 4k"></textarea>
-      <div class="row">
-        <div style="flex:1">
-          <div class="small">Optional: positive / negative prompts, styles, aspect ratio</div>
-        </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
+        <div><strong id="modalTitle">Preview</strong></div>
         <div style="display:flex;gap:8px">
-          <button id="closeModal" class="btn">Close</button>
-          <button id="generateImageBtn" class="btn primary">Generate</button>
+          <a id="modalDownload" class="btn" href="#" download>Download</a>
+          <button id="modalClose" class="btn">Close</button>
         </div>
       </div>
-      <div id="imgResultWrap" style="margin-top:12px"></div>
+      <div id="modalContent" style="margin-top:12px"></div>
     </div>
   </div>
 
 <script>
-/*
-  FULL CLIENT CODE.
-  - To enable live API calls, set llmApiUrl and imageApiUrl to your endpoints.
-  - Both endpoints are expected to accept POST JSON: { prompt: "..." }
-  - And return JSON { status: "success", text: "...", image_url: "..." } or similar.
-  - If you prefer, replace with your own fetch logic / headers.
-*/
-
-const chat = document.getElementById('chat');
-const inputText = document.getElementById('inputText');
-const sendBtn = document.getElementById('sendBtn');
-const imageBtn = document.getElementById('imageBtn');
-const modalBg = document.getElementById('modal');
-const imgPrompt = document.getElementById('imgPrompt');
-const generateImageBtn = document.getElementById('generateImageBtn');
-const closeModal = document.getElementById('closeModal');
-const imgResultWrap = document.getElementById('imgResultWrap');
-
+/* --------------------
+   Configuration
+   -------------------- */
+/* LLM and Image API endpoints. Already set previously; replace if needed. */
 const llmApiUrl = 'https://backend.buildpicoapps.com/aero/run/llm-api?pk=v1-Z0FBQUFBQm5HUEtMSjJkakVjcF9IQ0M0VFhRQ0FmSnNDSHNYTlJSblE0UXo1Q3RBcjFPcl9YYy1OZUhteDZWekxHdWRLM1M1alNZTkJMWEhNOWd4S1NPSDBTWC12M0U2UGc9PQ==';
 const imageApiUrl = 'https://backend.buildpicoapps.com/aero/run/image-generation-api?pk=v1-Z0FBQUFBQm5HUEtMSjJkakVjcF9IQ0M0VFhRQ0FmSnNDSHNYTlJSblE0UXo1Q3RBcjFPcl9YYy1OZUhteDZWekxHdWRLM1M1alNZTkJMWEhNOWd4S1NPSDBTWC12M0U2UGc9PQ==';
 
-let isLoading = false;
+/* --------------------
+   Helpers & state
+   -------------------- */
+const chatEl = document.getElementById('chat');
+const inputText = document.getElementById('inputText');
+const sendBtn = document.getElementById('sendBtn');
+const openImage = document.getElementById('openImage');
 
-function appendMessage({role='assistant', text='', imageUrl=null, time=new Date()}) {
-  const wrap = document.createElement('div');
-  wrap.className = 'msg ' + (role === 'user' ? 'user' : 'assistant');
+const systemPromptEl = document.getElementById('systemPrompt');
+const saveSystem = document.getElementById('saveSystem');
+const clearSystem = document.getElementById('clearSystem');
+const testSystem = document.getElementById('testSystem');
+
+const imagePromptEl = document.getElementById('imagePrompt');
+const generateBtn = document.getElementById('generateBtn');
+const countEl = document.getElementById('count');
+const sizeEl = document.getElementById('size');
+
+const gallery = document.getElementById('gallery');
+const clearGallery = document.getElementById('clearGallery');
+const exportGallery = document.getElementById('exportGallery');
+const downloadAll = document.getElementById('downloadAll');
+
+const modalBackdrop = document.getElementById('modalBackdrop');
+const modalContent = document.getElementById('modalContent');
+const modalClose = document.getElementById('modalClose');
+const modalDownload = document.getElementById('modalDownload');
+const modalTitle = document.getElementById('modalTitle');
+
+const refineChips = document.getElementById('refineChips');
+
+let isLoading = false;
+let history = JSON.parse(localStorage.getItem('dg_history') || '[]');
+let systemPrompt = localStorage.getItem('dg_system_prompt') || '';
+
+systemPromptEl.value = systemPrompt;
+
+/* --------------------
+   Utility functions
+   -------------------- */
+function escapeHtml(s){ return s ? s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') : '' }
+function toast(text, ms=1800){
+  const el = document.createElement('div');
+  el.textContent = text;
+  Object.assign(el.style,{position:'fixed',left:'50%',transform:'translateX(-50%)',bottom:'28px',background:'rgba(255,255,255,0.03)',color:'var(--text)',padding:'10px 14px',borderRadius:'12px',border:'1px solid rgba(255,255,255,0.03)',zIndex:9999});
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),ms);
+}
+function nowTime(){ return new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) }
+
+/* --------------------
+   Chat functions
+   -------------------- */
+function appendChat({role='assistant',text='',time=new Date(),imageUrl=null}){
+  const div = document.createElement('div');
+  div.className = 'msg ' + (role==='user' ? 'user' : 'assistant');
 
   if(imageUrl){
-    // image message bubble
-    const title = document.createElement('div');
-    title.innerHTML = `<strong>${role === 'user' ? 'You' : 'DarkGPT'}</strong>`;
-    const img = document.createElement('img');
-    img.src = imageUrl;
-    img.className = 'img-preview';
-    img.alt = text || 'Generated image';
-    wrap.appendChild(title);
-    if(text){
-      const caption = document.createElement('div');
-      caption.style.marginTop = '8px';
-      caption.style.fontSize = '0.92rem';
-      caption.style.color = 'var(--muted)';
-      caption.textContent = text;
-      wrap.appendChild(caption);
-    }
-    wrap.appendChild(img);
+    const title = document.createElement('div'); title.innerHTML = `<strong>${role==='user'? 'You' : 'DarkGPT'}</strong>`;
+    const caption = document.createElement('div'); caption.style.marginTop = '8px'; caption.style.color = 'var(--muted)'; caption.textContent = text || '';
+    const img = document.createElement('img'); img.src = imageUrl; img.className = 'img-preview'; img.alt = text || 'generated image';
+    div.appendChild(title);
+    if(text) div.appendChild(caption);
+    div.appendChild(img);
   } else {
-    // text bubble
-    wrap.innerHTML = `<div><strong>${role === 'user' ? 'You' : 'DarkGPT'}</strong></div>
-                      <div style="margin-top:6px">${escapeHtml(text)}</div>`;
+    div.innerHTML = `<div><strong>${role==='user' ? 'You' : 'DarkGPT'}</strong></div>
+                     <div style="margin-top:8px">${escapeHtml(text)}</div>`;
   }
 
-  const meta = document.createElement('div');
-  meta.className = 'meta';
-  const t = new Date(time);
-  meta.innerHTML = `<span>${t.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>`;
-  wrap.appendChild(meta);
-
-  chat.appendChild(wrap);
-  chat.scrollTop = chat.scrollHeight;
+  const meta = document.createElement('div'); meta.className='meta'; meta.innerHTML = `<span>${nowTime()}</span>`;
+  div.appendChild(meta);
+  chatEl.appendChild(div);
+  chatEl.scrollTop = chatEl.scrollHeight;
 }
 
-function setTyping(on, whoText='DarkGPT is typing...'){
-  if(on){
-    const indicator = document.createElement('div');
-    indicator.className = 'typing';
-    indicator.id = 'typingIndicator';
-    indicator.textContent = whoText;
-    chat.appendChild(indicator);
-    chat.scrollTop = chat.scrollHeight;
-  } else {
-    const el = document.getElementById('typingIndicator');
-    if(el) el.remove();
-  }
-}
-
-function escapeHtml(unsafe) {
-  return unsafe
-       .replace(/&/g, "&amp;")
-       .replace(/</g, "&lt;")
-       .replace(/>/g, "&gt;")
-       .replace(/"/g, "&quot;")
-       .replace(/'/g, "&#039;");
-}
-
-/* -------------------------
-   LLM / chat handling
-   ------------------------- */
-async function sendMessage() {
+/* --------------------
+   LLM call
+   -------------------- */
+async function sendMessage(){
   const prompt = inputText.value.trim();
   if(!prompt || isLoading) return;
-  appendMessage({role:'user', text: prompt});
+  appendChat({role:'user', text:prompt});
   inputText.value = '';
   isLoading = true;
-  setTyping(true);
+  showTyping(true);
 
   try {
-    const resp = await fetch(llmApiUrl, {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({prompt})
+    // Post payload includes system prompt so LLM can use it; APIs vary — adjust if needed
+    const payload = { prompt, system: systemPrompt || undefined };
+    const res = await fetch(llmApiUrl, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
     });
-    const data = await resp.json();
-    // handle a few possible response shapes
-    if(data.status === 'success' && (data.text || data.answer || data.response)){
-      const text = data.text || data.answer || data.response;
-      appendMessage({role:'assistant', text});
-    } else if(data.text){
-      appendMessage({role:'assistant', text: data.text});
-    } else {
-      // fallback if API structure unknown
-      appendMessage({role:'assistant', text: JSON.stringify(data).slice(0,1000)});
-    }
-  } catch (err) {
+    const data = await res.json();
+    // try to find text in common fields
+    const reply = data?.text || data?.answer || data?.response || data?.message || (typeof data === 'string' ? data : JSON.stringify(data).slice(0,1200));
+    appendChat({role:'assistant', text: reply.toString()});
+  } catch(err){
     console.error(err);
-    appendMessage({role:'assistant', text: '⚠️ Error: could not reach LLM API.'});
+    appendChat({role:'assistant', text:'⚠️ Error: could not reach LLM API.'});
   } finally {
     isLoading = false;
-    setTyping(false);
+    showTyping(false);
   }
 }
 
-/* -------------------------
-   Image generator modal
-   ------------------------- */
-imageBtn.addEventListener('click', () => {
-  imgPrompt.value = '';
-  imgResultWrap.innerHTML = '';
-  openModal();
-});
-
-closeModal.addEventListener('click', closeModalFn);
-modalBg.addEventListener('click', (e) => { if(e.target === modalBg) closeModalFn(); });
-generateImageBtn.addEventListener('click', generateImage);
-
-function openModal(){
-  modalBg.style.display = 'flex';
-  modalBg.setAttribute('aria-hidden','false');
-  imgPrompt.focus();
-}
-function closeModalFn(){
-  modalBg.style.display = 'none';
-  modalBg.setAttribute('aria-hidden','true');
+/* typing indicator helper */
+function showTyping(on){
+  const id = 'typingIndicator';
+  if(on){
+    const el = document.createElement('div'); el.id = id; el.className='typing'; el.textContent='DarkGPT is typing...'; chatEl.appendChild(el); chatEl.scrollTop=chatEl.scrollHeight;
+  } else {
+    const el = document.getElementById(id); if(el) el.remove();
+  }
 }
 
-/* Generate image via imageApiUrl */
-async function generateImage(){
-  const prompt = imgPrompt.value.trim();
-  if(!prompt || isLoading) return;
-  imgResultWrap.innerHTML = '';
-  const info = document.createElement('div'); info.className='small'; info.textContent='Generating...'; imgResultWrap.appendChild(info);
-
+/* --------------------
+   Image generation
+   -------------------- */
+async function generateImages(count=1, promptStr='', size='1024x1024'){
+  if(!promptStr || isLoading) return;
   isLoading = true;
+  toast('Generating images...');
   try {
-    const resp = await fetch(imageApiUrl, {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({prompt})
+    // Some image APIs accept n, size, system. Send them — adapt if your API expects different fields.
+    const payload = { prompt: promptStr, system: systemPrompt || undefined, n: count, size };
+    const res = await fetch(imageApiUrl, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
     });
-    const data = await resp.json();
-    // common possible fields: data.image_url, data.url, data.output, data.b64
-    let imgUrl = null;
-    if(data.status === 'success' && (data.image_url || data.url || data.output)) {
-      imgUrl = data.image_url || data.url || data.output;
-    } else if (data.b64) {
-      imgUrl = 'data:image/png;base64,' + data.b64;
-    } else if (typeof data === 'string' && data.startsWith('http')) {
-      imgUrl = data;
+    const data = await res.json();
+
+    // Try to extract images: possible fields image_url, url, output, b64, images array, data[0].url, etc.
+    let imgUrls = [];
+
+    if(Array.isArray(data?.images) && data.images.length){
+      imgUrls = data.images.map(i => (typeof i === 'string' ? i : i.url || i.image_url || i.b64 ? (i.b64 ? 'data:image/png;base64,'+i.b64 : (i.url || i.image_url)) : null)).filter(Boolean);
+    } else if (Array.isArray(data?.data) && data.data.length){
+      imgUrls = data.data.map(d => d.url || d.image_url || (d.b64 ? 'data:image/png;base64,'+d.b64 : null)).filter(Boolean);
+    } else if (data.image_url && typeof data.image_url === 'string'){
+      imgUrls = [data.image_url];
+    } else if (data.url && typeof data.url === 'string'){
+      imgUrls = [data.url];
+    } else if (data.output && typeof data.output === 'string' && data.output.startsWith('http')){
+      imgUrls = [data.output];
+    } else if (data.b64){
+      imgUrls = ['data:image/png;base64,' + data.b64];
     } else {
-      // try find a url inside response text
-      const jsonStr = JSON.stringify(data);
-      const match = jsonStr.match(/https?:\/\/[^\s"']+/);
-      if(match) imgUrl = match[0];
+      // try to find urls inside JSON
+      const text = JSON.stringify(data);
+      const matches = text.match(/https?:\/\/[^\s"']+/g);
+      if(matches) imgUrls = matches.slice(0, count);
     }
 
-    // display result in chat and modal
-    appendMessage({role:'user', text:'[Image Request] ' + prompt});
-    if(imgUrl){
-      appendMessage({role:'assistant', text: prompt, imageUrl: imgUrl});
-      imgResultWrap.innerHTML = `<img src="${imgUrl}" alt="result" class="img-preview">`;
-    } else if(data.text){
-      appendMessage({role:'assistant', text: data.text});
-      imgResultWrap.innerHTML = `<div class="small">No image URL found in API response. See response below:</div><pre style="white-space:pre-wrap;color:var(--muted);margin-top:8px">${escapeHtml(JSON.stringify(data, null, 2))}</pre>`;
-    } else {
-      appendMessage({role:'assistant', text: '⚠️ Image API returned unexpected response.'});
-      imgResultWrap.innerHTML = `<div class="small">Unexpected response. Check console for details.</div>`;
+    if(!imgUrls.length){
+      appendChat({role:'assistant', text:'⚠️ Image API returned unexpected response — check console.'});
       console.log('Image API response:', data);
+    } else {
+      // add each to history & chat
+      imgUrls.forEach(url=>{
+        appendChat({role:'assistant', text: promptStr, imageUrl: url});
+        addToHistory({prompt:promptStr,url, size, time: new Date().toISOString()});
+      });
+      renderGallery();
     }
   } catch(err){
     console.error(err);
-    appendMessage({role:'assistant', text: '⚠️ Error: could not reach Image API.'});
-    imgResultWrap.innerHTML = `<div class="small">Error contacting API.</div>`;
+    appendChat({role:'assistant', text:'⚠️ Error: could not reach Image API.'});
   } finally {
     isLoading = false;
   }
 }
 
-/* Send on Enter and button */
-inputText.addEventListener('keydown', (e)=>{
-  if(e.key === 'Enter' && !e.shiftKey){
-    e.preventDefault();
-    sendMessage();
+/* --------------------
+   History gallery (localStorage)
+   -------------------- */
+function addToHistory(item){
+  history.unshift(item);
+  // keep last 200
+  history = history.slice(0,200);
+  localStorage.setItem('dg_history', JSON.stringify(history));
+}
+function renderGallery(){
+  gallery.innerHTML = '';
+  if(history.length === 0){ gallery.innerHTML = '<div class="small muted">No images yet</div>'; return; }
+  history.forEach((h, idx)=>{
+    const el = document.createElement('div'); el.className='thumb';
+    const img = document.createElement('img'); img.src=h.url; img.alt=h.prompt || 'image';
+    const md = document.createElement('div'); md.className='meta';
+    const t = document.createElement('div'); t.textContent = h.prompt || '';
+    t.style.fontWeight = '600';
+    const tt = document.createElement('div'); tt.className='small muted'; tt.textContent = new Date(h.time).toLocaleString();
+    const actions = document.createElement('div'); actions.style.display='flex'; actions.style.gap='6px'; actions.style.marginTop='6px';
+    const view = document.createElement('button'); view.className='btn'; view.textContent='View'; view.addEventListener('click', ()=>openModal(h.url,h.prompt));
+    const dl = document.createElement('a'); dl.className='btn'; dl.textContent='Download'; dl.href=h.url; dl.download = 'darkgpt_image.png'; dl.target='_blank';
+    const del = document.createElement('button'); del.className='btn'; del.textContent='Delete'; del.addEventListener('click', ()=>{
+      if(!confirm('Delete this image from history?')) return;
+      history.splice(idx,1); localStorage.setItem('dg_history', JSON.stringify(history)); renderGallery();
+      toast('Deleted');
+    });
+    actions.appendChild(view); actions.appendChild(dl); actions.appendChild(del);
+    md.appendChild(t); md.appendChild(tt); md.appendChild(actions);
+    el.appendChild(img); el.appendChild(md);
+    gallery.appendChild(el);
+  });
+}
+
+/* --------------------
+   Modal preview
+   -------------------- */
+function openModal(url, prompt=''){
+  modalBackdrop.style.display = 'flex';
+  modalBackdrop.setAttribute('aria-hidden','false');
+  modalTitle.textContent = 'Preview';
+  modalContent.innerHTML = `<div style="margin-bottom:8px;color:var(--muted)">${escapeHtml(prompt)}</div><img src="${url}" class="img-preview" alt="preview">`;
+  modalDownload.href = url;
+  modalDownload.download = 'darkgpt_image.png';
+}
+function closeModal(){ modalBackdrop.style.display='none'; modalBackdrop.setAttribute('aria-hidden','true'); }
+
+/* --------------------
+   Event wiring
+   -------------------- */
+sendBtn.addEventListener('click', sendMessage);
+inputText.addEventListener('keydown', (e)=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendMessage(); } });
+
+generateBtn.addEventListener('click', ()=> {
+  const prompt = imagePromptEl.value.trim();
+  const count = Math.max(1, Math.min(6, parseInt(countEl.value) || 1));
+  const size = sizeEl.value || '1024x1024';
+  if(!prompt){ toast('Enter an image prompt'); return; }
+  generateImages(count, prompt, size);
+});
+
+openImage.addEventListener('click', ()=>{ document.getElementById('imagePrompt').focus(); toast('Use the Image Generator panel on the right'); });
+
+modalClose.addEventListener('click', closeModal);
+modalBackdrop.addEventListener('click', (e)=>{ if(e.target===modalBackdrop) closeModal(); });
+
+clearGallery.addEventListener('click', ()=>{ if(confirm('Clear gallery?')){ history=[]; localStorage.removeItem('dg_history'); renderGallery(); toast('Gallery cleared'); }});
+exportGallery.addEventListener('click', ()=>{ const blob = new Blob([JSON.stringify(history, null, 2)], {type:'application/json'}); const url = URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='darkgpt_gallery.json'; a.click(); URL.revokeObjectURL(url); });
+downloadAll.addEventListener('click', async ()=> {
+  if(!history.length){ toast('No images to download'); return; }
+  toast('Downloading all images...');
+  for(const h of [...history].reverse()){
+    const a = document.createElement('a');
+    a.href = h.url;
+    a.download = 'darkgpt_image.png';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    await new Promise(r=>setTimeout(r, 250)); // give browser time
   }
 });
-sendBtn.addEventListener('click', sendMessage);
 
-/* initial focus */
+saveSystem.addEventListener('click', ()=> {
+  systemPrompt = systemPromptEl.value.trim();
+  localStorage.setItem('dg_system_prompt', systemPrompt);
+  toast('System prompt saved');
+});
+clearSystem.addEventListener('click', ()=>{ systemPromptEl.value=''; systemPrompt=''; localStorage.removeItem('dg_system_prompt'); toast('System prompt cleared'); });
+testSystem.addEventListener('click', async ()=> {
+  const sys = systemPromptEl.value.trim();
+  if(!sys){ toast('System prompt empty'); return; }
+  // Simple test — send a quick LLM call to check effect
+  appendChat({role:'user', text:'(system test) Please say "OK" and repeat the system prompt.'});
+  try {
+    const res = await fetch(llmApiUrl, {
+      method:'POST',headers:{'Content-Type':'application/json'},body: JSON.stringify({ prompt: 'Repeat the system prompt', system: sys })
+    });
+    const data = await res.json();
+    const r = data?.text || data?.response || JSON.stringify(data).slice(0,500);
+    appendChat({role:'assistant', text: r.toString()});
+  } catch(e){ appendChat({role:'assistant', text:'⚠️ Error testing system prompt.'}); console.error(e); }
+});
+
+/* prompt refinement chips (append to image prompt or chat input depending on focus) */
+refineChips?.addEventListener('click', (ev)=>{
+  const chip = ev.target.closest('.chip');
+  if(!chip) return;
+  const txt = chip.dataset.text || chip.textContent || '';
+  // if image prompt focused or has value, append there; else append to chat input
+  if(document.activeElement === imagePromptEl || imagePromptEl.value.trim().length>0){
+    imagePromptEl.value = (imagePromptEl.value + ' ' + txt).trim();
+    imagePromptEl.focus();
+  } else {
+    inputText.value = (inputText.value + ' ' + txt).trim();
+    inputText.focus();
+  }
+});
+
+/* --------------------
+   Init UI
+   -------------------- */
+renderGallery();
 inputText.focus();
 
-/* small helper to show initial time-based prompt */
-(function showWelcomeNote(){
-  const msg = document.getElementById('welcome');
-  if(msg) setTimeout(()=> msg.style.transition='opacity 300ms', 250);
-})();
+/* show stored system prompt note */
+if(systemPrompt) toast('System prompt loaded');
 
 </script>
 </body>
