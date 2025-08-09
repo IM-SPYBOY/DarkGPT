@@ -1,246 +1,482 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dark-AI Chat</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>DarkGPT — Spyboy</title>
 <style>
-    :root {
-        --primary: #10A37F; /* ChatGPT green */
-        --bg-dark: #343541; /* ChatGPT main dark */
-        --bg-surface: #444654; /* ChatGPT secondary dark */
-        --text-primary: #ECECF1;
-        --text-secondary: #A0A0A0;
-        --message-user: #0D9276;
-    }
+  :root{
+    --bg: #000000;
+    --surface: #0b0b0b;
+    --muted: #9aa0a6;
+    --text: #e6eef3;
+    --accent: #00ff99; /* neon green for user messages */
+    --btn: #111213;
+    --danger: #ff4d4d;
+  }
 
-    body {
-        margin: 0;
-        background: var(--bg-dark);
-        color: var(--text-primary);
-        font-family: 'Inter', sans-serif;
-        height: 100vh;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
+  html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    box-sizing:border-box;
+  }
 
-    .container {
-        display: flex;
-        flex-direction: column;
-        width: 95%;
-        max-width: 900px;
-        height: 95vh;
-        background: var(--bg-dark);
-        border-radius: 12px;
-        overflow: hidden;
-        border: 1px solid #565869;
-    }
+  /* App frame */
+  .app {
+    width:100%;
+    max-width:980px;
+    height:90vh;
+    background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.01));
+    border:1px solid rgba(255,255,255,0.03);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.8);
+    border-radius:12px;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+  }
 
-    .header {
-        padding: 1rem;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        background: var(--bg-surface);
-        border-bottom: 1px solid #565869;
-    }
+  /* header */
+  .header{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:14px 18px;
+    background:var(--surface);
+    border-bottom:1px solid rgba(255,255,255,0.03);
+  }
+  .logo{
+    width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,#021, #032);
+    display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--accent);
+    box-shadow: 0 4px 12px rgba(0,255,153,0.03);
+    font-family:monospace;
+  }
+  .title{
+    font-size:1.05rem;font-weight:600;color:var(--text);
+  }
+  .spacer{flex:1}
+  .brand{
+    font-size:0.92rem;color:var(--muted);text-decoration:none;margin-left:8px;
+  }
 
-    .header i {
-        font-size: 1.8rem;
-        color: var(--primary);
-    }
+  /* main chat area */
+  .main{
+    flex:1;
+    display:flex;
+    gap:12px;
+    padding:18px;
+    overflow:hidden;
+  }
 
-    .header h1 {
-        font-size: 1.3rem;
-        margin: 0;
-        font-weight: 600;
-        color: var(--primary);
-    }
+  .left {
+    width:100%;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    height:100%;
+    background:transparent;
+  }
 
-    .chatbox {
-        flex: 1;
-        padding: 1rem;
-        overflow-y: auto;
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-    }
+  .chat {
+    flex:1;
+    overflow-y:auto;
+    padding-right:6px;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
 
-    .chat-message {
-        padding: 0.9rem 1.2rem;
-        border-radius: 8px;
-        max-width: 75%;
-        animation: fadeIn 0.3s ease-out;
-        word-break: break-word;
-        line-height: 1.5;
-    }
+  .msg {
+    max-width:78%;
+    padding:12px 14px;
+    border-radius:10px;
+    line-height:1.4;
+    font-size:0.96rem;
+    word-break:break-word;
+  }
 
-    .user-message {
-        align-self: flex-end;
-        background: var(--message-user);
-        color: white;
-    }
+  .msg.user {
+    margin-left:auto;
+    background: linear-gradient(180deg, rgba(0,255,153,0.06), rgba(0,255,153,0.03));
+    border:1px solid rgba(0,255,153,0.12);
+    color:var(--text);
+    box-shadow: 0 6px 18px rgba(0,255,153,0.02);
+  }
 
-    .assistant-message {
-        align-self: flex-start;
-        background: var(--bg-surface);
-        border: 1px solid #565869;
-    }
+  .msg.assistant {
+    margin-right:auto;
+    background: rgba(255,255,255,0.02);
+    border:1px solid rgba(255,255,255,0.03);
+    color:var(--text);
+  }
 
-    .input-area {
-        display: flex;
-        padding: 0.8rem;
-        gap: 0.5rem;
-        background: var(--bg-surface);
-        border-top: 1px solid #565869;
-    }
+  .meta {
+    font-size:0.76rem;color:var(--muted);margin-top:6px;
+    display:flex;gap:8px;align-items:center;
+  }
 
-    .input-area input {
-        flex: 1;
-        padding: 0.8rem 1rem;
-        background: var(--bg-dark);
-        border: 1px solid #565869;
-        border-radius: 8px;
-        color: var(--text-primary);
-        font-size: 0.95rem;
-    }
+  /* footer input area */
+  .footer {
+    padding:14px;
+    border-top:1px solid rgba(255,255,255,0.02);
+    background:var(--surface);
+    display:flex;
+    gap:10px;
+    align-items:center;
+  }
 
-    .input-area input:focus {
-        outline: none;
-        border-color: var(--primary);
-    }
+  .input {
+    flex:1;
+    display:flex;
+    gap:8px;
+    align-items:center;
+  }
 
-    .send-btn {
-        background: var(--primary);
-        border: none;
-        padding: 0 1rem;
-        border-radius: 8px;
-        cursor: pointer;
-        color: white;
-        font-size: 1.2rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: background 0.2s;
-    }
+  input[type="text"]{
+    width:100%;
+    background: #060606;
+    border:1px solid rgba(255,255,255,0.03);
+    color:var(--text);
+    padding:12px 14px;
+    border-radius:10px;
+    font-size:0.95rem;
+  }
+  input[type="text"]:focus{outline:none;box-shadow:0 0 0 3px rgba(0,255,153,0.06);border-color:rgba(0,255,153,0.12)}
 
-    .send-btn:hover {
-        background: #0c8c6a;
-    }
+  .btn {
+    background:var(--btn);
+    border:1px solid rgba(255,255,255,0.03);
+    color:var(--text);
+    padding:10px 14px;
+    border-radius:10px;
+    cursor:pointer;
+    font-weight:600;
+    font-size:0.95rem;
+  }
+  .btn:active{transform:translateY(1px)}
+  .btn.primary {
+    background:linear-gradient(180deg,#052,#023);
+    border:1px solid rgba(0,255,153,0.14);
+    color:var(--text);
+    box-shadow:0 6px 16px rgba(0,255,153,0.03);
+  }
 
-    .footer {
-        padding: 0.6rem;
-        text-align: center;
-        font-size: 0.8rem;
-        color: var(--text-secondary);
-        background: var(--bg-surface);
-        border-top: 1px solid #565869;
-    }
+  .btn.img {
+    background:var(--danger);
+    border-color:rgba(255,77,77,0.9);
+    color:white;
+  }
 
-    .footer a {
-        color: var(--primary);
-        text-decoration: none;
-    }
+  /* typing indicator */
+  .typing {
+    display:inline-block;
+    font-size:0.9rem;
+    color:var(--muted);
+    padding:6px 10px;
+    border-radius:8px;
+    background:rgba(255,255,255,0.01);
+    border:1px solid rgba(255,255,255,0.02);
+    width:fit-content;
+  }
 
-    .typing {
-        font-size: 0.85rem;
-        color: var(--text-secondary);
-        font-style: italic;
-    }
+  /* modal for image generator */
+  .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:none;align-items:center;justify-content:center;z-index:60}
+  .modal {
+    width:min(720px,96%);
+    background:#060606;
+    border:1px solid rgba(255,255,255,0.04);
+    padding:18px;border-radius:12px;
+    box-shadow:0 20px 60px rgba(0,0,0,0.7);
+    color:var(--text);
+  }
+  .modal h3{margin:0 0 8px 0;color:var(--text)}
+  .modal label{font-size:0.86rem;color:var(--muted)}
+  .modal textarea{
+    width:100%;min-height:120px;padding:12px;border-radius:8px;background:#050505;border:1px solid rgba(255,255,255,0.03);color:var(--text);
+    margin-top:8px;font-size:0.95rem;
+  }
 
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(5px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
+  .modal .row{display:flex;gap:8px;margin-top:12px;align-items:center}
+  .modal .small{font-size:0.82rem;color:var(--muted)}
+
+  /* image preview bubble */
+  .img-preview{max-width:320px;border-radius:8px;display:block;margin-top:8px;border:1px solid rgba(255,255,255,0.04)}
+  /* responsive */
+  @media (max-width:640px){
+    .msg{max-width:92%}
+    .modal{padding:12px}
+  }
 </style>
 </head>
 <body>
-
-<div class="container">
+  <div class="app" role="application" aria-label="DarkGPT chat">
     <div class="header">
-        <i class="fas fa-robot"></i>
-        <h1>Dark-AI</h1>
+      <div class="logo">DG</div>
+      <div class="title">DarkGPT</div>
+      <div class="spacer"></div>
+      <a class="brand" href="https://spyboy.bio" target="_blank" rel="noopener">Made by Spyboy</a>
     </div>
 
-    <div id="chatbox" class="chatbox"></div>
-
-    <div class="input-area">
-        <input id="chatInput" type="text" placeholder="Type a message...">
-        <button id="sendButton" class="send-btn"><i class="fas fa-paper-plane"></i></button>
+    <div class="main">
+      <div class="left">
+        <div id="chat" class="chat" aria-live="polite" aria-atomic="false">
+          <!-- messages get injected here -->
+          <div id="welcome" class="msg assistant">
+            <div><strong>DarkGPT</strong> — Hi. Ask me anything. Use the Image Generator to create images.</div>
+            <div class="meta">Powered by Spyboy • <span class="small">Offline demo / connect your API below</span></div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div class="footer">
-        Made with ❤️ by <a href="https://spyboy.bio" target="_blank">Spyboy</a>
+    <div class="footer" role="region" aria-label="Message composer">
+      <div class="input">
+        <input id="inputText" type="text" placeholder="Type your message and press Enter or Send..." aria-label="Message input">
+      </div>
+
+      <button id="imageBtn" class="btn img" title="Open Image Generator">🖼 Image Generator</button>
+      <button id="sendBtn" class="btn primary" title="Send message">Send</button>
     </div>
-</div>
+  </div>
+
+  <!-- Image modal -->
+  <div id="modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal" role="document">
+      <h3>Image Generator</h3>
+      <label for="imgPrompt">Describe the image you want:</label>
+      <textarea id="imgPrompt" placeholder="e.g. Cyberpunk city at night, neon lights, cinematic, 4k"></textarea>
+      <div class="row">
+        <div style="flex:1">
+          <div class="small">Optional: positive / negative prompts, styles, aspect ratio</div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button id="closeModal" class="btn">Close</button>
+          <button id="generateImageBtn" class="btn primary">Generate</button>
+        </div>
+      </div>
+      <div id="imgResultWrap" style="margin-top:12px"></div>
+    </div>
+  </div>
 
 <script>
-    const sendButton = document.getElementById("sendButton");
-    const chatInput = document.getElementById('chatInput');
-    const chatbox = document.getElementById('chatbox');
+/*
+  FULL CLIENT CODE.
+  - To enable live API calls, set llmApiUrl and imageApiUrl to your endpoints.
+  - Both endpoints are expected to accept POST JSON: { prompt: "..." }
+  - And return JSON { status: "success", text: "...", image_url: "..." } or similar.
+  - If you prefer, replace with your own fetch logic / headers.
+*/
 
-    function displayMessage(message, isUser) {
-        const msgElem = document.createElement('div');
-        msgElem.className = `chat-message ${isUser ? 'user-message' : 'assistant-message'}`;
-        msgElem.innerHTML = message;
-        chatbox.appendChild(msgElem);
-        chatbox.scrollTop = chatbox.scrollHeight;
+const chat = document.getElementById('chat');
+const inputText = document.getElementById('inputText');
+const sendBtn = document.getElementById('sendBtn');
+const imageBtn = document.getElementById('imageBtn');
+const modalBg = document.getElementById('modal');
+const imgPrompt = document.getElementById('imgPrompt');
+const generateImageBtn = document.getElementById('generateImageBtn');
+const closeModal = document.getElementById('closeModal');
+const imgResultWrap = document.getElementById('imgResultWrap');
+
+const llmApiUrl = 'https://backend.buildpicoapps.com/aero/run/llm-api?pk=v1-Z0FBQUFBQm5HUEtMSjJkakVjcF9IQ0M0VFhRQ0FmSnNDSHNYTlJSblE0UXo1Q3RBcjFPcl9YYy1OZUhteDZWekxHdWRLM1M1alNZTkJMWEhNOWd4S1NPSDBTWC12M0U2UGc9PQ==';
+const imageApiUrl = 'https://backend.buildpicoapps.com/aero/run/image-generation-api?pk=v1-Z0FBQUFBQm5HUEtMSjJkakVjcF9IQ0M0VFhRQ0FmSnNDSHNYTlJSblE0UXo1Q3RBcjFPcl9YYy1OZUhteDZWekxHdWRLM1M1alNZTkJMWEhNOWd4S1NPSDBTWC12M0U2UGc9PQ==';
+
+let isLoading = false;
+
+function appendMessage({role='assistant', text='', imageUrl=null, time=new Date()}) {
+  const wrap = document.createElement('div');
+  wrap.className = 'msg ' + (role === 'user' ? 'user' : 'assistant');
+
+  if(imageUrl){
+    // image message bubble
+    const title = document.createElement('div');
+    title.innerHTML = `<strong>${role === 'user' ? 'You' : 'DarkGPT'}</strong>`;
+    const img = document.createElement('img');
+    img.src = imageUrl;
+    img.className = 'img-preview';
+    img.alt = text || 'Generated image';
+    wrap.appendChild(title);
+    if(text){
+      const caption = document.createElement('div');
+      caption.style.marginTop = '8px';
+      caption.style.fontSize = '0.92rem';
+      caption.style.color = 'var(--muted)';
+      caption.textContent = text;
+      wrap.appendChild(caption);
     }
+    wrap.appendChild(img);
+  } else {
+    // text bubble
+    wrap.innerHTML = `<div><strong>${role === 'user' ? 'You' : 'DarkGPT'}</strong></div>
+                      <div style="margin-top:6px">${escapeHtml(text)}</div>`;
+  }
 
-    function showTyping() {
-        const typingElem = document.createElement('div');
-        typingElem.className = 'typing';
-        typingElem.textContent = "Dark-AI is typing...";
-        typingElem.id = "typingIndicator";
-        chatbox.appendChild(typingElem);
-        chatbox.scrollTop = chatbox.scrollHeight;
-    }
+  const meta = document.createElement('div');
+  meta.className = 'meta';
+  const t = new Date(time);
+  meta.innerHTML = `<span>${t.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>`;
+  wrap.appendChild(meta);
 
-    function hideTyping() {
-        const typingElem = document.getElementById("typingIndicator");
-        if (typingElem) typingElem.remove();
-    }
+  chat.appendChild(wrap);
+  chat.scrollTop = chat.scrollHeight;
+}
 
-    async function callApi(apiUrl, prompt) {
-        showTyping();
-        const response = await fetch(apiUrl, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({prompt})
-        });
-        hideTyping();
-        return response.json();
-    }
+function setTyping(on, whoText='DarkGPT is typing...'){
+  if(on){
+    const indicator = document.createElement('div');
+    indicator.className = 'typing';
+    indicator.id = 'typingIndicator';
+    indicator.textContent = whoText;
+    chat.appendChild(indicator);
+    chat.scrollTop = chat.scrollHeight;
+  } else {
+    const el = document.getElementById('typingIndicator');
+    if(el) el.remove();
+  }
+}
 
-    sendButton.addEventListener('click', async () => {
-        const message = chatInput.value.trim();
-        if (!message) return;
-        displayMessage(message, true);
-        chatInput.value = '';
+function escapeHtml(unsafe) {
+  return unsafe
+       .replace(/&/g, "&amp;")
+       .replace(/</g, "&lt;")
+       .replace(/>/g, "&gt;")
+       .replace(/"/g, "&quot;")
+       .replace(/'/g, "&#039;");
+}
 
-        const apiUrl = message.startsWith('/image') ? 
-            'https://backend.buildpicoapps.com/aero/run/image-generation-api?pk=v1-Z0FBQUFBQm5HUEtMSjJkakVjcF9IQ0M0VFhRQ0FmSnNDSHNYTlJSblE0UXo1Q3RBcjFPcl9YYy1OZUhteDZWekxHdWRLM1M1alNZTkJMWEhNOWd4S1NPSDBTWC12M0U2UGc9PQ==' : 
-            'https://backend.buildpicoapps.com/aero/run/llm-api?pk=v1-Z0FBQUFBQm5HUEtMSjJkakVjcF9IQ0M0VFhRQ0FmSnNDSHNYTlJSblE0UXo1Q3RBcjFPcl9YYy1OZUhteDZWekxHdWRLM1M1alNZTkJMWEhNOWd4S1NPSDBTWC12M0U2UGc9PQ==';
+/* -------------------------
+   LLM / chat handling
+   ------------------------- */
+async function sendMessage() {
+  const prompt = inputText.value.trim();
+  if(!prompt || isLoading) return;
+  appendMessage({role:'user', text: prompt});
+  inputText.value = '';
+  isLoading = true;
+  setTyping(true);
 
-        try {
-            const data = await callApi(apiUrl, message);
-            if (data.status === 'success') {
-                displayMessage(data.text, false);
-            } else {
-                displayMessage("❌ Error: Could not process request.", false);
-            }
-        } catch (err) {
-            displayMessage("⚠️ Something went wrong!", false);
-        }
+  try {
+    const resp = await fetch(llmApiUrl, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({prompt})
     });
+    const data = await resp.json();
+    // handle a few possible response shapes
+    if(data.status === 'success' && (data.text || data.answer || data.response)){
+      const text = data.text || data.answer || data.response;
+      appendMessage({role:'assistant', text});
+    } else if(data.text){
+      appendMessage({role:'assistant', text: data.text});
+    } else {
+      // fallback if API structure unknown
+      appendMessage({role:'assistant', text: JSON.stringify(data).slice(0,1000)});
+    }
+  } catch (err) {
+    console.error(err);
+    appendMessage({role:'assistant', text: '⚠️ Error: could not reach LLM API.'});
+  } finally {
+    isLoading = false;
+    setTyping(false);
+  }
+}
 
-    chatInput.addEventListener("keypress", (e) => {
-        if (e.key === "Enter") sendButton.click();
+/* -------------------------
+   Image generator modal
+   ------------------------- */
+imageBtn.addEventListener('click', () => {
+  imgPrompt.value = '';
+  imgResultWrap.innerHTML = '';
+  openModal();
+});
+
+closeModal.addEventListener('click', closeModalFn);
+modalBg.addEventListener('click', (e) => { if(e.target === modalBg) closeModalFn(); });
+generateImageBtn.addEventListener('click', generateImage);
+
+function openModal(){
+  modalBg.style.display = 'flex';
+  modalBg.setAttribute('aria-hidden','false');
+  imgPrompt.focus();
+}
+function closeModalFn(){
+  modalBg.style.display = 'none';
+  modalBg.setAttribute('aria-hidden','true');
+}
+
+/* Generate image via imageApiUrl */
+async function generateImage(){
+  const prompt = imgPrompt.value.trim();
+  if(!prompt || isLoading) return;
+  imgResultWrap.innerHTML = '';
+  const info = document.createElement('div'); info.className='small'; info.textContent='Generating...'; imgResultWrap.appendChild(info);
+
+  isLoading = true;
+  try {
+    const resp = await fetch(imageApiUrl, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({prompt})
     });
+    const data = await resp.json();
+    // common possible fields: data.image_url, data.url, data.output, data.b64
+    let imgUrl = null;
+    if(data.status === 'success' && (data.image_url || data.url || data.output)) {
+      imgUrl = data.image_url || data.url || data.output;
+    } else if (data.b64) {
+      imgUrl = 'data:image/png;base64,' + data.b64;
+    } else if (typeof data === 'string' && data.startsWith('http')) {
+      imgUrl = data;
+    } else {
+      // try find a url inside response text
+      const jsonStr = JSON.stringify(data);
+      const match = jsonStr.match(/https?:\/\/[^\s"']+/);
+      if(match) imgUrl = match[0];
+    }
+
+    // display result in chat and modal
+    appendMessage({role:'user', text:'[Image Request] ' + prompt});
+    if(imgUrl){
+      appendMessage({role:'assistant', text: prompt, imageUrl: imgUrl});
+      imgResultWrap.innerHTML = `<img src="${imgUrl}" alt="result" class="img-preview">`;
+    } else if(data.text){
+      appendMessage({role:'assistant', text: data.text});
+      imgResultWrap.innerHTML = `<div class="small">No image URL found in API response. See response below:</div><pre style="white-space:pre-wrap;color:var(--muted);margin-top:8px">${escapeHtml(JSON.stringify(data, null, 2))}</pre>`;
+    } else {
+      appendMessage({role:'assistant', text: '⚠️ Image API returned unexpected response.'});
+      imgResultWrap.innerHTML = `<div class="small">Unexpected response. Check console for details.</div>`;
+      console.log('Image API response:', data);
+    }
+  } catch(err){
+    console.error(err);
+    appendMessage({role:'assistant', text: '⚠️ Error: could not reach Image API.'});
+    imgResultWrap.innerHTML = `<div class="small">Error contacting API.</div>`;
+  } finally {
+    isLoading = false;
+  }
+}
+
+/* Send on Enter and button */
+inputText.addEventListener('keydown', (e)=>{
+  if(e.key === 'Enter' && !e.shiftKey){
+    e.preventDefault();
+    sendMessage();
+  }
+});
+sendBtn.addEventListener('click', sendMessage);
+
+/* initial focus */
+inputText.focus();
+
+/* small helper to show initial time-based prompt */
+(function showWelcomeNote(){
+  const msg = document.getElementById('welcome');
+  if(msg) setTimeout(()=> msg.style.transition='opacity 300ms', 250);
+})();
+
 </script>
-
 </body>
 </html>
