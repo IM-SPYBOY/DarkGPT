@@ -155,19 +155,6 @@
             background: rgba(0, 255, 153, 0.8);
         }
 
-        .chip {
-            padding: 8px 12px;
-            border-radius: 999px;
-            background: rgba(20, 20, 20, 0.8);
-            color: var(--text);
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .chip:hover {
-            background: rgba(30, 30, 30, 0.9);
-        }
-
         @media (max-width: 600px) {
             .app {
                 height: 95vh;
@@ -204,18 +191,40 @@
         const sendBtn = document.getElementById('sendBtn');
         const clearBtn = document.getElementById('clearBtn');
 
+        // Replace this with your actual API endpoint
+        const llmApiUrl = 'https://backend.buildpicoapps.com/aero/run/llm-api?pk=v1-Z0FBQUFBQm5HUEtMSjJkakVjcF9IQ0M0VFhRQ0FmSnNDSHNYTlJSblE0UXo1Q3RBcjFPcl9YYy1OZUhteDZWekxHdWRLM1M1alNZTkJMWEhNOWd4S1NPSDBTWC12M0U2UGc9PQ==';
+
         async function sendMessage() {
             const prompt = inputText.value.trim();
             if (!prompt) return;
 
+            // Append user message to chat
             appendMessage('user', prompt);
             inputText.value = '';
 
-            // Simulate AI response (replace this with your actual API call)
-            setTimeout(() => {
-                const response = `You said: ${prompt}`;
-                appendMessage('assistant', response);
-            }, 1000);
+            // Prepare the payload for the API request
+            const payload = { prompt: prompt };
+
+            try {
+                const response = await fetch(llmApiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                const data = await response.json();
+                const reply = data?.text || 'Sorry, I could not get a response.';
+
+                // Append assistant message to chat
+                appendMessage('assistant', reply);
+            } catch (error) {
+                console.error('Error:', error);
+                appendMessage('assistant', '⚠️ Error: could not reach LLM API.');
+            }
         }
 
         function appendMessage(role, text) {
@@ -223,7 +232,7 @@
             msgEl.className = `msg ${role}`;
             msgEl.innerHTML = `<strong>${role === 'user' ? 'You' : 'DarkGPT'}</strong><div>${text}</div>`;
             chatEl.appendChild(msgEl);
-            chatEl.scrollTop = chatEl.scrollHeight;
+            chatEl.scrollTop = chatEl.scrollHeight; // Scroll to the bottom
         }
 
         sendBtn.addEventListener('click', sendMessage);
